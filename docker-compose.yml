@@ -6,6 +6,4 @@ services:
     image: stakersunion.stakersunion.public.dappnode.eth:0.1.0
     restart: unless-stopped
     environment:
-      NODE_ENV: "production"
-      PORT: "3000"
       ELIGIBLE_ADDRESS: ""

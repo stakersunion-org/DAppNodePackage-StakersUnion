@@ -5,7 +5,7 @@ const path = require('path')
 require('dotenv').config()
 
 const app = express()
-const PORT = 3000
+const PORT = 80
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')))
@@ -37,6 +37,8 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Web UI available at http://localhost:${PORT}`)
   console.log('📊 Service status: ACTIVE')
   console.log('🔗 Ready to verify DAppNode operations')
+  console.log('Environment variables:')
+  console.log(process.env)
 })
 
 // Handle graceful shutdown

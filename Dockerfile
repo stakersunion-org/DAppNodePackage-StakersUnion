@@ -11,6 +11,9 @@ RUN npm install --omit=dev
 # Copy application code from verification folder
 COPY verification/app.js ./
 
+# Copy static files
+COPY verification/public ./public
+
 # Copy .env file if it exists (optional)
 COPY verification/.env* ./
 
