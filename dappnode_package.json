@@ -6,6 +6,12 @@
   "author": "thame",
   "categories": ["Developer tools"],
   "architectures": ["linux/amd64", "linux/arm64"],
+  "globalEnvs": [
+    {
+      "envs": ["CONSENSUS_CLIENT_MAINNET", "EXECUTION_CLIENT_MAINNET", "MEVBOOST_MAINNET"],
+      "services": ["stakersunion"]
+    }
+  ],
   "links": {
     "homepage": "https://stakersunion.com",
     "docs": "https://docs.stakersunion.com"
