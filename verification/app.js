@@ -1,21 +1,43 @@
 #!/usr/bin/env node
 
+const express = require('express')
+const path = require('path')
 require('dotenv').config()
 
-console.log('🚀 Stakers Union DAppNode verification service starting...')
-console.log('✅ DAppNode package is running successfully!')
-console.log('📊 Service status: ACTIVE')
-console.log('🔗 Ready to verify DAppNode operations')
+const app = express()
+const PORT = 3000
 
-// Log all available environment variables
-console.log('🔍 Available environment variables:')
-console.log(process.env)
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')))
 
-// Keep the service running
-setInterval(() => {
-  const timestamp = new Date().toISOString()
-  console.log(`[${timestamp}] Stakers Union DAppNode service is healthy and running`)
-}, 30000) // Log every 30 seconds
+// API endpoint to get environment variables
+app.get('/api/env', (req, res) => {
+  const envVars = {
+    ELIGIBLE_ADDRESS: process.env.ELIGIBLE_ADDRESS || 'Not set',
+    _DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET:
+      process.env._DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET || 'Not set',
+    _DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET:
+      process.env._DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET || 'Not set',
+  }
+  res.json(envVars)
+})
+
+// Serve the main HTML page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'))
+})
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy', timestamp: new Date().toISOString() })
+})
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('🚀 Stakers Union DAppNode verification service starting...')
+  console.log(`✅ Web UI available at http://localhost:${PORT}`)
+  console.log('📊 Service status: ACTIVE')
+  console.log('🔗 Ready to verify DAppNode operations')
+})
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => {

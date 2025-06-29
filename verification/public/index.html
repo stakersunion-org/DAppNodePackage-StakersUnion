@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Stakers Union DAppNode Verification</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+        color: #333;
+      }
+
+      h1 {
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+      }
+
+      .env-item {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #f9f9f9;
+      }
+
+      .env-label {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 5px;
+      }
+
+      .env-value {
+        font-family: monospace;
+        background: #fff;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        word-break: break-all;
+      }
+
+      .not-set {
+        color: #e74c3c;
+        font-style: italic;
+      }
+
+      .refresh-btn {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .refresh-btn:hover {
+        background: #2980b9;
+      }
+
+      .timestamp {
+        margin-top: 20px;
+        color: #7f8c8d;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Stakers Union DAppNode Verification</h1>
+
+    <div id="env-container">
+      <p>Loading environment variables...</p>
+    </div>
+
+    <button
+      class="refresh-btn"
+      onclick="loadEnvVars()"
+    >
+      Refresh
+    </button>
+
+    <div
+      class="timestamp"
+      id="timestamp"
+    ></div>
+
+    <script>
+      async function loadEnvVars() {
+        try {
+          const response = await fetch('/api/env')
+          const envVars = await response.json()
+
+          const container = document.getElementById('env-container')
+          container.innerHTML = ''
+
+          Object.entries(envVars).forEach(([key, value]) => {
+            const envItem = document.createElement('div')
+            envItem.className = 'env-item'
+
+            const isNotSet = value === 'Not set'
+            const valueClass = isNotSet ? 'env-value not-set' : 'env-value'
+
+            envItem.innerHTML = `
+              <div class="env-label">${key}</div>
+              <div class="${valueClass}">${value}</div>
+            `
+
+            container.appendChild(envItem)
+          })
+
+          document.getElementById(
+            'timestamp'
+          ).textContent = `Last updated: ${new Date().toLocaleString()}`
+        } catch (error) {
+          console.error('Error loading environment variables:', error)
+          document.getElementById('env-container').innerHTML =
+            '<p>Error loading environment variables</p>'
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', loadEnvVars)
+      setInterval(loadEnvVars, 30000)
+    </script>
+  </body>
+</html>
