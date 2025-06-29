@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
-    <title>Stakers Union DAppNode Verification</title>
+    <title>Stakers Union Verification on DAppNode</title>
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -14,36 +14,74 @@
         margin: 0 auto;
         padding: 20px;
         line-height: 1.6;
-        color: #333;
+        color: #ffffff;
+        background-color: #000000;
+        min-height: 100vh;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .logo {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
       }
 
       h1 {
-        color: #2c3e50;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 10px;
+        color: #ffffff;
       }
 
       .env-item {
         margin: 20px 0;
         padding: 15px;
-        border: 1px solid #ddd;
+        border: 1px solid #333;
         border-radius: 4px;
-        background: #f9f9f9;
+        background: #111;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 200px;
+      }
+
+      .checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      .checkbox:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
       }
 
       .env-label {
         font-weight: bold;
-        color: #2c3e50;
-        margin-bottom: 5px;
+        color: #ffffff;
+        margin: 0;
+        flex: 1;
       }
 
       .env-value {
         font-family: monospace;
-        background: #fff;
+        background: #222;
+        color: #ffffff;
         padding: 8px;
-        border: 1px solid #ccc;
+        border: 1px solid #444;
         border-radius: 3px;
         word-break: break-all;
+        flex: 2;
       }
 
       .not-set {
@@ -51,40 +89,79 @@
         font-style: italic;
       }
 
-      .refresh-btn {
+      .verify-btn {
         background: #3498db;
         color: white;
         border: none;
-        padding: 10px 20px;
+        padding: 12px 24px;
         border-radius: 4px;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 20px;
       }
 
-      .refresh-btn:hover {
+      .verify-btn:hover {
         background: #2980b9;
+      }
+
+      .verify-btn:disabled {
+        background: #555;
+        cursor: not-allowed;
       }
 
       .timestamp {
         margin-top: 20px;
-        color: #7f8c8d;
+        color: #888;
         font-size: 12px;
+      }
+
+      .status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 4px;
+        display: none;
+      }
+
+      .status.success {
+        background: #27ae60;
+        color: white;
+        display: block;
+      }
+
+      .status.error {
+        background: #e74c3c;
+        color: white;
+        display: block;
       }
     </style>
   </head>
   <body>
-    <h1>Stakers Union DAppNode Verification</h1>
+    <div class="header">
+      <img
+        src="avatar.png"
+        alt="Stakers Union Logo"
+        class="logo"
+      />
+      <h1>Stakers Union Verification on DAppNode</h1>
+    </div>
 
     <div id="env-container">
       <p>Loading environment variables...</p>
     </div>
 
     <button
-      class="refresh-btn"
-      onclick="loadEnvVars()"
+      class="verify-btn"
+      onclick="verifyConfiguration()"
+      id="verify-btn"
     >
-      Refresh
+      Verify
     </button>
+
+    <div
+      class="status"
+      id="status"
+    ></div>
 
     <div
       class="timestamp"
@@ -92,10 +169,12 @@
     ></div>
 
     <script>
+      let envVars = {}
+
       async function loadEnvVars() {
         try {
           const response = await fetch('/api/env')
-          const envVars = await response.json()
+          envVars = await response.json()
 
           const container = document.getElementById('env-container')
           container.innerHTML = ''
@@ -106,9 +185,19 @@
 
             const isNotSet = value === 'Not set'
             const valueClass = isNotSet ? 'env-value not-set' : 'env-value'
+            const isEligibleAddress = key === 'ELIGIBLE_ADDRESS'
 
             envItem.innerHTML = `
-              <div class="env-label">${key}</div>
+              <div class="checkbox-container">
+                <input 
+                  type="checkbox" 
+                  class="checkbox" 
+                  id="checkbox-${key}"
+                  ${isEligibleAddress ? 'checked disabled' : 'checked'}
+                  ${isEligibleAddress ? 'onclick="return false"' : ''}
+                >
+                <label for="checkbox-${key}" class="env-label">${key}</label>
+              </div>
               <div class="${valueClass}">${value}</div>
             `
 
@@ -125,8 +214,71 @@
         }
       }
 
+      async function verifyConfiguration() {
+        const verifyBtn = document.getElementById('verify-btn')
+        const statusDiv = document.getElementById('status')
+
+        verifyBtn.disabled = true
+        verifyBtn.textContent = 'Verifying...'
+        statusDiv.className = 'status'
+        statusDiv.textContent = ''
+
+        try {
+          // Get checked fields
+          const checkedFields = {}
+          Object.keys(envVars).forEach((key) => {
+            const checkbox = document.getElementById(`checkbox-${key}`)
+            if (checkbox && checkbox.checked) {
+              checkedFields[key] = envVars[key]
+            }
+          })
+
+          // Get API configuration
+          const apiResponse = await fetch('/api/config')
+          const config = await apiResponse.json()
+
+          if (!config.API_ENDPOINT || !config.API_SECRET) {
+            throw new Error('API configuration not found')
+          }
+
+          // Make POST request to API
+          const response = await fetch(config.API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${config.API_SECRET}`,
+            },
+            body: JSON.stringify({
+              fields: checkedFields,
+              timestamp: new Date().toISOString(),
+            }),
+          })
+
+          if (response.ok) {
+            const result = await response.json()
+            statusDiv.className = 'status success'
+            statusDiv.textContent = `Verification successful: ${
+              result.message || 'Configuration verified'
+            }`
+
+            // Update timestamp
+            document.getElementById(
+              'timestamp'
+            ).textContent = `Last verified: ${new Date().toLocaleString()}`
+          } else {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+        } catch (error) {
+          console.error('Verification error:', error)
+          statusDiv.className = 'status error'
+          statusDiv.textContent = `Verification failed: ${error.message}`
+        } finally {
+          verifyBtn.disabled = false
+          verifyBtn.textContent = 'Verify'
+        }
+      }
+
       document.addEventListener('DOMContentLoaded', loadEnvVars)
-      setInterval(loadEnvVars, 30000)
     </script>
   </body>
 </html>
