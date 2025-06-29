@@ -11,6 +11,9 @@ RUN npm install --omit=dev
 # Copy application code from verification folder
 COPY verification/app.js ./
 
+# Copy .env file if it exists (optional)
+COPY verification/.env* ./
+
 # Make app.js executable
 RUN chmod +x app.js
 

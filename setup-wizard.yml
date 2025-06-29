@@ -4,7 +4,7 @@ fields:
     target:
       type: environment
       name: ELIGIBLE_ADDRESS
-      service: service
+      service: stakersunion
     title: Eligible Address
     description: >-
       Your eligible address for the Stakers Union.

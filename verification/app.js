@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require('dotenv').config()
+
 console.log('🚀 Stakers Union DAppNode verification service starting...')
 console.log('✅ DAppNode package is running successfully!')
 console.log('📊 Service status: ACTIVE')
