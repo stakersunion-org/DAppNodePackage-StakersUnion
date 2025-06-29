@@ -2,10 +2,11 @@
 
 const express = require('express')
 const path = require('path')
+const fetch = require('node-fetch')
 require('dotenv').config()
 
 const app = express()
-const PORT = process.env.NODE_ENV === 'production' ? 80 : 3000
+const PORT = 80
 
 // Middleware to parse JSON bodies
 app.use(express.json())
@@ -29,9 +30,49 @@ app.get('/api/env', (req, res) => {
 app.get('/api/config', (req, res) => {
   const config = {
     API_ENDPOINT: process.env.API_ENDPOINT || '',
-    API_SECRET: process.env.API_SECRET || ''
+    API_SECRET: process.env.API_SECRET || '',
   }
   res.json(config)
+})
+
+// Proxy endpoint to handle verification requests and avoid CORS issues
+app.post('/api/verify', async (req, res) => {
+  try {
+    const { fields, timestamp } = req.body
+    const apiEndpoint = process.env.API_ENDPOINT
+    const apiSecret = process.env.API_SECRET
+
+    if (!apiEndpoint || !apiSecret) {
+      return res.status(400).json({ error: 'API configuration not found' })
+    }
+
+    console.log('🔍 Proxying verification request to:', apiEndpoint)
+    
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiSecret}`,
+      },
+      body: JSON.stringify({
+        fields,
+        timestamp,
+      }),
+    })
+
+    const responseData = await response.json()
+
+    if (response.ok) {
+      console.log('✅ Verification successful')
+      res.json(responseData)
+    } else {
+      console.log('❌ Verification failed:', response.status, responseData)
+      res.status(response.status).json(responseData)
+    }
+  } catch (error) {
+    console.error('🚨 Verification error:', error)
+    res.status(500).json({ error: error.message })
+  }
 })
 
 // Serve the main HTML page

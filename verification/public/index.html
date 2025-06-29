@@ -233,20 +233,11 @@
             }
           })
 
-          // Get API configuration
-          const apiResponse = await fetch('/api/config')
-          const config = await apiResponse.json()
-
-          if (!config.API_ENDPOINT || !config.API_SECRET) {
-            throw new Error('API configuration not found')
-          }
-
-          // Make POST request to API
-          const response = await fetch(config.API_ENDPOINT, {
+          // Make POST request to our proxy endpoint
+          const response = await fetch('/api/verify', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${config.API_SECRET}`,
             },
             body: JSON.stringify({
               fields: checkedFields,
@@ -266,7 +257,8 @@
               'timestamp'
             ).textContent = `Last verified: ${new Date().toLocaleString()}`
           } else {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            const errorData = await response.json()
+            throw new Error(`HTTP ${response.status}: ${errorData.error || response.statusText}`)
           }
         } catch (error) {
           console.error('Verification error:', error)
