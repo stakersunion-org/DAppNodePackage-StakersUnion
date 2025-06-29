@@ -1,12 +1,18 @@
 {
   "name": "stakersunion.public.dappnode.eth",
   "version": "0.1.0",
-  "description": "DAppNode Package for verifying operation of a DAppNode",
+  "description": "DAppNode Package for verifying operation of a DAppNode for the Stakers Union",
   "type": "service",
   "author": "thame",
   "categories": ["Developer tools"],
+  "architectures": ["linux/amd64", "linux/arm64"],
   "links": {
-    "homepage": "https://your-project-homepage-or-docs.io"
+    "homepage": "https://stakersunion.com",
+    "docs": "https://docs.stakersunion.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stakersunion-org/DAppNodePackage-StakersUnion"
   },
   "license": "GPL-3.0"
 }

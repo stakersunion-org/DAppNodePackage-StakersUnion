@@ -1,0 +1,14 @@
+version: "2"
+fields:
+  - id: eligibleAddress,
+    target:
+      type: environment
+      name: ELIGIBLE_ADDRESS
+      service: service
+    title: Eligible Address
+    description: >-
+      Your eligible address for the Stakers Union.
+    secret: false
+    pattern: "^0x[a-fA-F0-9]{40}$"
+    patternErrorMessage: Must be a valid address (0x1fd16a...)
+    required: true
