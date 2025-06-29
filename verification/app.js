@@ -5,7 +5,10 @@ const path = require('path')
 require('dotenv').config()
 
 const app = express()
-const PORT = 80
+const PORT = process.env.NODE_ENV === 'production' ? 80 : 3000
+
+// Middleware to parse JSON bodies
+app.use(express.json())
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')))
@@ -20,6 +23,15 @@ app.get('/api/env', (req, res) => {
       process.env._DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET || 'Not set',
   }
   res.json(envVars)
+})
+
+// API endpoint to get configuration (API_ENDPOINT and API_SECRET)
+app.get('/api/config', (req, res) => {
+  const config = {
+    API_ENDPOINT: process.env.API_ENDPOINT || '',
+    API_SECRET: process.env.API_SECRET || ''
+  }
+  res.json(config)
 })
 
 // Serve the main HTML page
