@@ -8,7 +8,7 @@
   "architectures": ["linux/amd64", "linux/arm64"],
   "globalEnvs": [
     {
-      "envs": ["CONSENSUS_CLIENT_MAINNET", "EXECUTION_CLIENT_MAINNET", "MEVBOOST_MAINNET"],
+      "envs": ["CONSENSUS_CLIENT_MAINNET", "EXECUTION_CLIENT_MAINNET"],
       "services": ["stakersunion"]
     }
   ],
