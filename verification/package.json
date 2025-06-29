@@ -1,0 +1,11 @@
+{
+  "name": "stakersunion-dappnode-app",
+  "version": "1.0.0",
+  "description": "Stakers Union DAppNode verification service",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "thame",
+  "license": "GPL-3.0"
+} 
