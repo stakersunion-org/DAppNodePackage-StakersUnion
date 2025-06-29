@@ -87,11 +87,9 @@ app.get('/health', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('🚀 Stakers Union DAppNode verification service starting...')
-  console.log(`✅ Web UI available at http://localhost:${PORT}`)
+  console.log(`✅ Web UI available at http://stakersunion.stakersunion.public.dappnode/`)
   console.log('📊 Service status: ACTIVE')
   console.log('🔗 Ready to verify DAppNode operations')
-  console.log('Environment variables:')
-  console.log(process.env)
 })
 
 // Handle graceful shutdown
