@@ -22,17 +22,9 @@ app.get('/api/env', (req, res) => {
       process.env._DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET || 'Not set',
     _DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET:
       process.env._DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET || 'Not set',
+    _DAPPNODE_GLOBAL_PUBKEY: process.env._DAPPNODE_GLOBAL_PUBKEY || 'Not set',
   }
   res.json(envVars)
-})
-
-// API endpoint to get configuration (API_ENDPOINT and API_SECRET)
-app.get('/api/config', (req, res) => {
-  const config = {
-    API_ENDPOINT: process.env.API_ENDPOINT || '',
-    API_SECRET: process.env.API_SECRET || '',
-  }
-  res.json(config)
 })
 
 // Proxy endpoint to handle verification requests and avoid CORS issues
@@ -47,12 +39,12 @@ app.post('/api/verify', async (req, res) => {
     }
 
     console.log('🔍 Proxying verification request to:', apiEndpoint)
-    
+
     const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiSecret}`,
+        Authorization: `Bearer ${apiSecret}`,
       },
       body: JSON.stringify({
         fields,
