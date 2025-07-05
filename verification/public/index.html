@@ -150,6 +150,10 @@
       <p>Loading environment variables...</p>
     </div>
 
+    <div id="validators-container">
+      <p>Validators registered in web3signer: <span id="validators-status">No validators registered</span></p>
+    </div>
+
     <button
       class="verify-btn"
       onclick="verifyConfiguration()"
@@ -170,6 +174,7 @@
 
     <script>
       let envVars = {}
+      let hasValidators = false
 
       async function loadEnvVars() {
         try {
@@ -186,6 +191,8 @@
             const isNotSet = value === 'Not set'
             const valueClass = isNotSet ? 'env-value not-set' : 'env-value'
             const isEligibleAddress = key === 'ELIGIBLE_ADDRESS'
+            const isPublicKey = key === '_DAPPNODE_GLOBAL_PUBKEY'
+            const isRequired = isEligibleAddress || isPublicKey
 
             envItem.innerHTML = `
               <div class="checkbox-container">
@@ -193,8 +200,8 @@
                   type="checkbox" 
                   class="checkbox" 
                   id="checkbox-${key}"
-                  ${isEligibleAddress ? 'checked disabled' : 'checked'}
-                  ${isEligibleAddress ? 'onclick="return false"' : ''}
+                  ${isRequired ? 'checked disabled' : 'checked'}
+                  ${isRequired ? 'onclick="return false"' : ''}
                 >
                 <label for="checkbox-${key}" class="env-label">${key}</label>
               </div>
@@ -212,6 +219,16 @@
           document.getElementById('env-container').innerHTML =
             '<p>Error loading environment variables</p>'
         }
+      }
+
+      async function checkValidators() {
+        const response = await fetch('/api/validators')
+        const data = await response.json()
+        hasValidators = data.hasValidators
+        const validatorsStatus = document.getElementById('validators-status')
+        validatorsStatus.textContent = hasValidators
+          ? 'Validators registered'
+          : 'No validators registered'
       }
 
       async function verifyConfiguration() {
@@ -270,7 +287,10 @@
         }
       }
 
-      document.addEventListener('DOMContentLoaded', loadEnvVars)
+      document.addEventListener('DOMContentLoaded', async () => {
+        await loadEnvVars()
+        await checkValidators()
+      })
     </script>
   </body>
 </html>

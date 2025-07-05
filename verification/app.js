@@ -18,13 +18,55 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.get('/api/env', (req, res) => {
   const envVars = {
     ELIGIBLE_ADDRESS: process.env.ELIGIBLE_ADDRESS || 'Not set',
+    _DAPPNODE_GLOBAL_PUBKEY: process.env._DAPPNODE_GLOBAL_PUBKEY || 'Not set',
     _DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET:
       process.env._DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET || 'Not set',
     _DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET:
       process.env._DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET || 'Not set',
-    _DAPPNODE_GLOBAL_PUBKEY: process.env._DAPPNODE_GLOBAL_PUBKEY || 'Not set',
   }
   res.json(envVars)
+})
+
+// API endpoint to check if validators registered in web3signer
+app.get('/api/validators', async (req, res) => {
+  try {
+    const web3signerUrl = 'http://web3signer.web3signer.dappnode:9000/eth/v1/keystores'
+
+    console.log('🔍 Fetching validators from web3signer:', web3signerUrl)
+
+    const response = await fetch(web3signerUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      console.log('❌ Failed to fetch validators:', response.status, response.statusText)
+      return res.status(response.status).json({
+        error: 'Failed to fetch validators from web3signer',
+        status: response.status,
+        statusText: response.statusText,
+      })
+    }
+
+    const data = await response.json()
+    const hasValidators = data.data ? data.data.length > 0 : false
+
+    console.log('✅ Validators registered in web3signer:', hasValidators)
+
+    res.json({
+      hasValidators,
+      source: 'web3signer',
+    })
+  } catch (error) {
+    console.error('🚨 Error fetching validators:', error)
+    res.status(500).json({
+      error: error.message,
+      hasValidators: false,
+      source: 'web3signer',
+    })
+  }
 })
 
 // Proxy endpoint to handle verification requests and avoid CORS issues
