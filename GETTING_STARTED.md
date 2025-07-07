@@ -10,7 +10,9 @@ This package does the following:
 
 - Requests entry of your ELIGIBLE_ADDRESS
 - Requests your DAppNode PUBKEY to ensure uniqueness of submission
-- Submits eligible address, and your DAppNode public key to the Stakers Union API
+- Requests the number of validators running on your DAppNode to ensure that at least one validator is running using the Web3Signer endpoint
+- Requests the execution client and consensus client to ensure that they are running using the DAppNode environment variables
+- Submits collected information to the Stakers Union API
 
 ## How to Use
 
