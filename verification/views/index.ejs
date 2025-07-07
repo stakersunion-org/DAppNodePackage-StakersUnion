@@ -110,6 +110,10 @@
         color: white;
         display: block;
       }
+
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -131,63 +135,25 @@
       <% }); %>
     </div>
 
-    <button
-      class="verify-btn"
-      onclick="verifyConfiguration()"
-      id="verify-btn"
-    >
-      Verify
-    </button>
+    <form method="POST" action="/verify">
+      <% Object.entries(envVars).forEach(([key, value]) => { %>
+        <input type="hidden" name="<%= key %>" value="<%= value %>">
+      <% }); %>
+      <input type="hidden" name="timestamp" value="<%= new Date().toISOString() %>">
+      
+      <button
+        type="submit"
+        class="verify-btn"
+        id="verify-btn"
+      >
+        Verify
+      </button>
+    </form>
 
-    <div
-      class="status"
-      id="status"
-    ></div>
-
-    <script>
-      const envVars = JSON.parse('<%- JSON.stringify(envVars) %>')
-
-      async function verifyConfiguration() {
-        const verifyBtn = document.getElementById('verify-btn')
-        const statusDiv = document.getElementById('status')
-
-        verifyBtn.disabled = true
-        verifyBtn.textContent = 'Verifying...'
-        statusDiv.className = 'status'
-        statusDiv.textContent = ''
-
-        try {
-          // Verify all environment variables
-          const response = await fetch('/api/verify', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              fields: envVars,
-              timestamp: new Date().toISOString(),
-            }),
-          })
-
-          if (response.ok) {
-            const result = await response.json()
-            statusDiv.className = 'status success'
-            statusDiv.textContent = `Verification successful: ${
-              result.message || 'Configuration verified'
-            }`
-          } else {
-            const errorData = await response.json()
-            throw new Error(`HTTP ${response.status}: ${errorData.error || response.statusText}`)
-          }
-        } catch (error) {
-          console.error('Verification error:', error)
-          statusDiv.className = 'status error'
-          statusDiv.textContent = `Verification failed: ${error.message}`
-        } finally {
-          verifyBtn.disabled = false
-          verifyBtn.textContent = 'Verify'
-        }
-      }
-    </script>
+    <% if (typeof verificationResult !== 'undefined') { %>
+      <div class="status <%= verificationResult.success ? 'success' : 'error' %>">
+        <%= verificationResult.message %>
+      </div>
+    <% } %>
   </body>
 </html>

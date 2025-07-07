@@ -8,8 +8,8 @@ require('dotenv').config()
 const app = express()
 const PORT = 80
 
-// Middleware to parse JSON bodies
-app.use(express.json())
+// Middleware to parse form data
+app.use(express.urlencoded({ extended: true }))
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs')
@@ -18,18 +18,24 @@ app.set('views', path.join(__dirname, 'views'))
 // Serve static files from public directory (for avatar.png and other assets)
 app.use(express.static(path.join(__dirname, 'public')))
 
-// Proxy endpoint to handle verification requests and avoid CORS issues
-app.post('/api/verify', async (req, res) => {
+// POST endpoint to handle verification requests
+app.post('/verify', async (req, res) => {
   try {
-    const { fields, timestamp } = req.body
+    const { timestamp, ...fields } = req.body
     const apiEndpoint = process.env.API_ENDPOINT
     const apiSecret = process.env.API_SECRET
 
     if (!apiEndpoint || !apiSecret) {
-      return res.status(400).json({ error: 'API configuration not found' })
+      return res.render('index', { 
+        envVars: getEnvVars(),
+        verificationResult: {
+          success: false,
+          message: 'API configuration not found'
+        }
+      })
     }
 
-    console.log('🔍 Proxying verification request to:', apiEndpoint)
+    console.log('🔍 Sending verification request to:', apiEndpoint)
 
     const response = await fetch(apiEndpoint, {
       method: 'POST',
@@ -47,20 +53,38 @@ app.post('/api/verify', async (req, res) => {
 
     if (response.ok) {
       console.log('✅ Verification successful')
-      res.json(responseData)
+      res.render('index', { 
+        envVars: getEnvVars(),
+        verificationResult: {
+          success: true,
+          message: `Verification successful: ${responseData.message || 'Configuration verified'}`
+        }
+      })
     } else {
       console.log('❌ Verification failed:', response.status, responseData)
-      res.status(response.status).json(responseData)
+      res.render('index', { 
+        envVars: getEnvVars(),
+        verificationResult: {
+          success: false,
+          message: `Verification failed: HTTP ${response.status}: ${responseData.error || response.statusText}`
+        }
+      })
     }
   } catch (error) {
     console.error('🚨 Verification error:', error)
-    res.status(500).json({ error: error.message })
+    res.render('index', { 
+      envVars: getEnvVars(),
+      verificationResult: {
+        success: false,
+        message: `Verification failed: ${error.message}`
+      }
+    })
   }
 })
 
-// Serve the main HTML page with environment variables
-app.get('/', (req, res) => {
-  const envVars = {
+// Helper function to get environment variables
+function getEnvVars() {
+  return {
     ELIGIBLE_ADDRESS: process.env.ELIGIBLE_ADDRESS || 'Not set',
     _DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET:
       process.env._DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET || 'Not set',
@@ -68,7 +92,11 @@ app.get('/', (req, res) => {
       process.env._DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET || 'Not set',
     _DAPPNODE_GLOBAL_PUBKEY: process.env._DAPPNODE_GLOBAL_PUBKEY || 'Not set',
   }
-  res.render('index', { envVars })
+}
+
+// Serve the main HTML page with environment variables
+app.get('/', (req, res) => {
+  res.render('index', { envVars: getEnvVars() })
 })
 
 // Health check endpoint
