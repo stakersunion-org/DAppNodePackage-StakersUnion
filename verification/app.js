@@ -11,21 +11,12 @@ const PORT = 80
 // Middleware to parse JSON bodies
 app.use(express.json())
 
-// Serve static files from public directory
-app.use(express.static(path.join(__dirname, 'public')))
+// Set EJS as the view engine
+app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, 'views'))
 
-// API endpoint to get environment variables
-app.get('/api/env', (req, res) => {
-  const envVars = {
-    ELIGIBLE_ADDRESS: process.env.ELIGIBLE_ADDRESS || 'Not set',
-    _DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET:
-      process.env._DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET || 'Not set',
-    _DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET:
-      process.env._DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET || 'Not set',
-    _DAPPNODE_GLOBAL_PUBKEY: process.env._DAPPNODE_GLOBAL_PUBKEY || 'Not set',
-  }
-  res.json(envVars)
-})
+// Serve static files from public directory (for avatar.png and other assets)
+app.use(express.static(path.join(__dirname, 'public')))
 
 // Proxy endpoint to handle verification requests and avoid CORS issues
 app.post('/api/verify', async (req, res) => {
@@ -67,9 +58,17 @@ app.post('/api/verify', async (req, res) => {
   }
 })
 
-// Serve the main HTML page
+// Serve the main HTML page with environment variables
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'))
+  const envVars = {
+    ELIGIBLE_ADDRESS: process.env.ELIGIBLE_ADDRESS || 'Not set',
+    _DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET:
+      process.env._DAPPNODE_GLOBAL_EXECUTION_CLIENT_MAINNET || 'Not set',
+    _DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET:
+      process.env._DAPPNODE_GLOBAL_CONSENSUS_CLIENT_MAINNET || 'Not set',
+    _DAPPNODE_GLOBAL_PUBKEY: process.env._DAPPNODE_GLOBAL_PUBKEY || 'Not set',
+  }
+  res.render('index', { envVars })
 })
 
 // Health check endpoint

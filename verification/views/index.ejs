@@ -123,7 +123,12 @@
     </div>
 
     <div id="env-container">
-      <p>Loading environment variables...</p>
+      <% Object.entries(envVars).forEach(([key, value]) => { %>
+      <div class="env-item">
+        <div class="env-label"><%= key %></div>
+        <div class="env-value <%= value === 'Not set' ? 'not-set' : '' %>"><%= value %></div>
+      </div>
+      <% }); %>
     </div>
 
     <button
@@ -140,36 +145,7 @@
     ></div>
 
     <script>
-      let envVars = {}
-
-      async function loadEnvVars() {
-        try {
-          const response = await fetch('/api/env')
-          envVars = await response.json()
-
-          const container = document.getElementById('env-container')
-          container.innerHTML = ''
-
-          Object.entries(envVars).forEach(([key, value]) => {
-            const envItem = document.createElement('div')
-            envItem.className = 'env-item'
-
-            const isNotSet = value === 'Not set'
-            const valueClass = isNotSet ? 'env-value not-set' : 'env-value'
-
-            envItem.innerHTML = `
-              <div class="env-label">${key}</div>
-              <div class="${valueClass}">${value}</div>
-            `
-
-            container.appendChild(envItem)
-          })
-        } catch (error) {
-          console.error('Error loading environment variables:', error)
-          document.getElementById('env-container').innerHTML =
-            '<p>Error loading environment variables</p>'
-        }
-      }
+      const envVars = JSON.parse('<%- JSON.stringify(envVars) %>')
 
       async function verifyConfiguration() {
         const verifyBtn = document.getElementById('verify-btn')
@@ -212,8 +188,6 @@
           verifyBtn.textContent = 'Verify'
         }
       }
-
-      document.addEventListener('DOMContentLoaded', loadEnvVars)
     </script>
   </body>
 </html>
