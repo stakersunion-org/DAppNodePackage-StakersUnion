@@ -48,24 +48,6 @@
         gap: 15px;
       }
 
-      .checkbox-container {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 200px;
-      }
-
-      .checkbox {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-      }
-
-      .checkbox:disabled {
-        cursor: not-allowed;
-        opacity: 0.6;
-      }
-
       .env-label {
         font-weight: bold;
         color: #ffffff;
@@ -108,12 +90,6 @@
       .verify-btn:disabled {
         background: #555;
         cursor: not-allowed;
-      }
-
-      .timestamp {
-        margin-top: 20px;
-        color: #888;
-        font-size: 12px;
       }
 
       .status {
@@ -163,11 +139,6 @@
       id="status"
     ></div>
 
-    <div
-      class="timestamp"
-      id="timestamp"
-    ></div>
-
     <script>
       let envVars = {}
 
@@ -185,28 +156,14 @@
 
             const isNotSet = value === 'Not set'
             const valueClass = isNotSet ? 'env-value not-set' : 'env-value'
-            const isEligibleAddress = key === 'ELIGIBLE_ADDRESS'
 
             envItem.innerHTML = `
-              <div class="checkbox-container">
-                <input 
-                  type="checkbox" 
-                  class="checkbox" 
-                  id="checkbox-${key}"
-                  ${isEligibleAddress ? 'checked disabled' : 'checked'}
-                  ${isEligibleAddress ? 'onclick="return false"' : ''}
-                >
-                <label for="checkbox-${key}" class="env-label">${key}</label>
-              </div>
+              <div class="env-label">${key}</div>
               <div class="${valueClass}">${value}</div>
             `
 
             container.appendChild(envItem)
           })
-
-          document.getElementById(
-            'timestamp'
-          ).textContent = `Last updated: ${new Date().toLocaleString()}`
         } catch (error) {
           console.error('Error loading environment variables:', error)
           document.getElementById('env-container').innerHTML =
@@ -224,23 +181,14 @@
         statusDiv.textContent = ''
 
         try {
-          // Get checked fields
-          const checkedFields = {}
-          Object.keys(envVars).forEach((key) => {
-            const checkbox = document.getElementById(`checkbox-${key}`)
-            if (checkbox && checkbox.checked) {
-              checkedFields[key] = envVars[key]
-            }
-          })
-
-          // Make POST request to our proxy endpoint
+          // Verify all environment variables
           const response = await fetch('/api/verify', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              fields: checkedFields,
+              fields: envVars,
               timestamp: new Date().toISOString(),
             }),
           })
@@ -251,11 +199,6 @@
             statusDiv.textContent = `Verification successful: ${
               result.message || 'Configuration verified'
             }`
-
-            // Update timestamp
-            document.getElementById(
-              'timestamp'
-            ).textContent = `Last verified: ${new Date().toLocaleString()}`
           } else {
             const errorData = await response.json()
             throw new Error(`HTTP ${response.status}: ${errorData.error || response.statusText}`)
