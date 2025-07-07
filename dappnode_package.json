@@ -1,6 +1,6 @@
 {
   "name": "stakersunion.public.dappnode.eth",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "shortDescription": "Join the Stakers Union",
   "description": "DAppNode Package for verifying operation of a DAppNode for the Stakers Union",
   "type": "service",
